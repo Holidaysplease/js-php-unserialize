@@ -235,13 +235,15 @@ function unserializeSession (input) {
     }
     // Other output = $someSerializedStuff$key
     else {
-      var match = part.match(/^((?:.*?[;\}])+)([^;\}]+?)$/);
-      if (match) {
-        output[output._currKey] = unserialize(match[1]);
-        output._currKey = match[2];
-      } else {
-        throw new Error('Parse error on part "' + part + '"');
-      }
+      var lastSemiColon = part.lastIndexOf(';'),
+          lastBrace = part.lastIndexOf('}'),
+          lastTerminal = Math.max(lastSemiColon, lastBrace);
+
+      if (lastTerminal <= 0)
+          return;
+
+      output[output._currKey] = unserialize(part.substr(0, lastTerminal + 1));
+      output._currKey = part.substr(lastTerminal + 1);
     }
     return output;
   }, {});
